@@ -19,7 +19,7 @@
                 <article class="rounded-lg border border-gray-200 bg-slate-50 p-4">
                     <h2 class="mb-2 text-sm font-bold text-gray-800">Licencias Municipales</h2>
                     <p class="mb-4 text-xs text-gray-600">Refrendo de giros comerciales y consulta de requisitos.</p>
-                    <button type="button" disabled aria-describedby="services-unavailable" class="cursor-not-allowed rounded bg-amber-400 px-4 py-2 text-xs font-bold text-gray-900 opacity-70">Consultar Trámite</button>
+                    <a href="{{ route('solicitud-licencia') }}" class="inline-flex rounded bg-amber-500 px-4 py-2 text-xs font-bold text-gray-900 hover:bg-amber-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700">Probar formulario de licencia</a>
                 </article>
                 <article class="rounded-lg border border-gray-200 bg-slate-50 p-4">
                     <h2 class="mb-2 text-sm font-bold text-gray-800">Agua Potable y Servicios</h2>
@@ -27,7 +27,7 @@
                     <button type="button" disabled aria-describedby="services-unavailable" class="cursor-not-allowed rounded bg-amber-400 px-4 py-2 text-xs font-bold text-gray-900 opacity-70">Ir a Servicios</button>
                 </article>
             </div>
-            <p id="services-unavailable" class="mt-4 text-xs text-gray-500">Los enlaces de pago y consulta se activarán cuando los servicios correspondientes estén disponibles.</p>
+            <p id="services-unavailable" class="mt-4 text-xs text-gray-500">Los pagos y las consultas se habilitarán cuando estén disponibles. El formulario de licencia solo permite probar la validación y no envía solicitudes.</p>
         </section>
 
         <aside>

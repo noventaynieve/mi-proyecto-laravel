@@ -18,6 +18,8 @@ Route::view('/tramites', 'tramites')->name('tramites');
 Route::view('/regidores', 'regidores')->name('regidores');
 Route::view('/gaceta', 'gaceta')->name('gaceta');
 Route::view('/atencion-ciudadana', 'atencion-ciudadana')->name('atencion-ciudadana');
+Route::view('/solicitud-transparencia', 'solicitud-transparencia')->name('solicitud-transparencia');
+Route::view('/solicitud-licencia', 'solicitud-licencia')->name('solicitud-licencia');
 
 Route::get('/buscar', function (Request $request) {
     $validated = $request->validate([
@@ -46,9 +48,9 @@ Route::get('/buscar', function (Request $request) {
 })->name('buscar');
 
 Route::get('/saludo/{nombre}', function ($nombre) {
-    return '¡Hola, ' . $nombre . '! Este es un mensaje personalizado desde tu proyecto de Laravel.';
+    return '¡Hola, '.$nombre.'! Este es un mensaje personalizado desde tu proyecto de Laravel.';
 });
 
 Route::get('/contacto/{nombre?}', function ($nombre = 'Usuario') {
     return view('contacto', ['nombre' => $nombre]);
-});
+})->name('contacto');

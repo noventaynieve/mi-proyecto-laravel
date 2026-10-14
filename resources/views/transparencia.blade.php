@@ -34,6 +34,10 @@
                     </tbody>
                 </table>
             </div>
+            <div class="mt-6 rounded-lg border border-amber-300 bg-amber-50 p-4">
+                <p class="text-sm text-slate-700">La solicitud en línea es una demostración y todavía no se recibe ni almacena.</p>
+                <a href="{{ route('solicitud-transparencia') }}" class="mt-3 inline-flex rounded bg-teal-700 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700">Probar formulario de solicitud</a>
+            </div>
         </section>
 
         <aside>

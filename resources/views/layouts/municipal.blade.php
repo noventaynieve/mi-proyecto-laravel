@@ -34,7 +34,7 @@
             <div class="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
                 <form action="{{ route('buscar') }}" method="GET" role="search" class="flex w-full md:w-80">
                     <label for="site-search" class="sr-only">Buscar secciones del portal</label>
-                    <input id="site-search" type="search" name="q" maxlength="100" placeholder="Buscar trámites o información" class="min-w-0 flex-1 rounded-l-lg border border-gray-300 px-3 py-2 text-sm focus:z-10 focus:border-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-700">
+                    <input id="site-search" type="search" name="q" maxlength="100" required placeholder="Buscar trámites o información" class="min-w-0 flex-1 rounded-l-lg border border-gray-300 px-3 py-2 text-sm focus:z-10 focus:border-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-700">
                     <button type="submit" class="rounded-r-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700">Buscar</button>
                 </form>
                 <div class="flex items-center gap-3 text-sm text-gray-600">
@@ -117,9 +117,12 @@
                 <h2 class="mb-3 border-b border-white/20 pb-2 text-base font-bold">Enlaces Institucionales</h2>
                 <ul class="space-y-2 text-xs text-gray-200">
                     <li><a href="{{ route('transparencia') }}" class="hover:underline">Transparencia</a></li>
+                    <li><a href="{{ route('solicitud-transparencia') }}" class="hover:underline">Solicitud de información (demostración)</a></li>
                     <li><a href="{{ route('tramites') }}" class="hover:underline">Trámites y Servicios</a></li>
+                    <li><a href="{{ route('solicitud-licencia') }}" class="hover:underline">Solicitud de licencia (demostración)</a></li>
                     <li><a href="{{ route('gaceta') }}" class="hover:underline">Gaceta Municipal</a></li>
                     <li><a href="{{ route('atencion-ciudadana') }}" class="hover:underline">Atención Ciudadana</a></li>
+                    <li><a href="{{ route('contacto') }}" class="hover:underline">Contacto (demostración)</a></li>
                     <li><span>Protección de Datos</span></li>
                     <li><span>Bolsa de Trabajo</span></li>
                     <li><span>Normatividad Municipal</span></li>

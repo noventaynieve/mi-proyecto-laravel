@@ -67,7 +67,7 @@ class MunicipalSectionsTest extends TestCase
         $response->assertSee('Pago de Predial');
         $response->assertSee('Licencias Municipales');
         $response->assertSee('Agua Potable y Servicios');
-        $response->assertSee('Los enlaces de pago y consulta se activarán');
+        $response->assertSee('Los pagos y las consultas se habilitarán');
         $response->assertSee('disabled', false);
         $response->assertSee('>Inicio</a>', false);
     }
@@ -92,15 +92,47 @@ class MunicipalSectionsTest extends TestCase
         $response->assertDontSee('Descargar PDF');
     }
 
-    public function test_citizen_attention_page_explains_that_reports_are_not_received(): void
+    public function test_citizen_attention_page_renders_a_demo_report_form_without_claiming_to_send_it(): void
     {
         $response = $this->get(route('atencion-ciudadana'));
 
         $response->assertOk();
         $response->assertSee('Atención Ciudadana y Reportes');
-        $response->assertSee('todavía no recibe ni almacena reportes ciudadanos');
+        $response->assertSee('no envía ni guarda la información');
         $response->assertSee('contacto@cocula.gob.mx');
-        $response->assertDontSee('Enviar Reporte');
+        $response->assertSee('data-client-validation-only', false);
+        $response->assertSee('name="tipo_incidencia"', false);
+        $response->assertSee('name="fotografia"', false);
+    }
+
+    public function test_demonstration_form_pages_render_their_required_fields(): void
+    {
+        foreach ([
+            route('solicitud-transparencia') => ['solicitante', 'email', 'detalle_solicitud', 'modalidad'],
+            route('solicitud-licencia') => ['nombre_negocio', 'rfc', 'giro', 'comprobante_domicilio'],
+            route('contacto') => ['nombre', 'correo', 'dependencia', 'mensaje'],
+        ] as $url => $fieldNames) {
+            $response = $this->get($url);
+
+            $response->assertOk();
+            $response->assertSee('data-client-validation-only', false);
+            $response->assertSee('demostración');
+
+            foreach ($fieldNames as $fieldName) {
+                $response->assertSee('name="'.$fieldName.'"', false);
+            }
+        }
+    }
+
+    public function test_transparency_and_services_pages_link_to_their_demo_forms(): void
+    {
+        $transparencyResponse = $this->get(route('transparencia'));
+        $servicesResponse = $this->get(route('tramites'));
+
+        $transparencyResponse->assertOk();
+        $transparencyResponse->assertSee('href="'.route('solicitud-transparencia').'"', false);
+        $servicesResponse->assertOk();
+        $servicesResponse->assertSee('href="'.route('solicitud-licencia').'"', false);
     }
 
     public function test_search_returns_relevant_section_and_escapes_query(): void

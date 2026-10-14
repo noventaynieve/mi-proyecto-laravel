@@ -1,3 +1,5 @@
+import './autenticaciones.js';
+
 document.querySelectorAll('[data-dropdown]').forEach((dropdown) => {
     const toggle = dropdown.querySelector('[data-dropdown-toggle]');
     const menu = dropdown.querySelector('[data-dropdown-menu]');
