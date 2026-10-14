@@ -1,0 +1,102 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../views/**/*.blade.php';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+    --color-gobierno-blue: #0a192f;
+    --color-gobierno-dark: #071326;
+    --color-gobierno-hover: #0d9488;
+    --color-gobierno-navy: #0a192f;
+    --color-gobierno-teal: #0d9488;
+    --color-gobierno-gold: #d97706;
+}
+
+.dropdown-menu {
+    opacity: 0;
+    transform: scaleY(0.95);
+    transform-origin: top;
+    visibility: hidden;
+    transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out, visibility 0.2s;
+}
+
+.dropdown-menu.is-open {
+    opacity: 1;
+    transform: scaleY(1);
+    visibility: visible;
+}
+
+.carousel-slide {
+    opacity: 1;
+    transition: opacity 0.8s ease-in-out;
+}
+
+.carousel-slide[aria-hidden='true'] {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.institutional-card {
+    border: 1px solid rgb(229 231 235);
+    border-radius: 0.5rem;
+    background-color: white;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
+}
+
+.sidebar-box {
+    border: 1px solid rgb(226 232 240);
+    border-radius: 0.5rem;
+    background-color: white;
+    padding: 1.25rem;
+}
+
+.municipal-hero {
+    background-color: #1e293b;
+    background-image: linear-gradient(to bottom, rgb(0 0 0 / 0.2), rgb(0 0 0 / 0.6)), url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1400&q=80');
+    background-position: center;
+    background-size: cover;
+}
+
+.institutional-table {
+    width: 100%;
+    min-width: 36rem;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.875rem;
+}
+
+.institutional-table th,
+.institutional-table td {
+    border: 1px solid rgb(229 231 235);
+    padding: 0.75rem 1rem;
+}
+
+.institutional-table th {
+    background-color: var(--color-gobierno-blue);
+    font-weight: 700;
+    color: white;
+}
+
+.institutional-table tbody tr:hover {
+    background-color: rgb(248 250 252);
+}
+
+body.high-contrast,
+body.high-contrast * {
+    border-color: white !important;
+    background-color: black !important;
+    color: white !important;
+}
+
+body.high-contrast a {
+    color: #ffff00 !important;
+    text-decoration: underline;
+}
+
+body.high-contrast button {
+    outline-color: white !important;
+}
