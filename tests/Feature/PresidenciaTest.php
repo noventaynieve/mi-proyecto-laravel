@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class PresidenciaTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_homepage_menu_links_to_presidencia_page(): void
     {
         $response = $this->get('/');
@@ -18,6 +21,21 @@ class PresidenciaTest extends TestCase
         ], false);
         $response->assertSee('bg-gobierno-navy', false);
         $response->assertSeeInOrder(['>PAGO</span>', '>DE SERV</span>'], false);
+    }
+
+    public function test_gaceta_navigation_has_dropdown_links_for_each_section(): void
+    {
+        $response = $this->get('/');
+
+        $response->assertOk();
+        $response->assertSeeInOrder([
+            '<a href="'.route('gaceta').'"',
+            '>Gaceta</a>',
+            '<button id="dropdown-gaceta-btn"',
+            '<a href="'.route('gaceta').'" class="block px-4 py-2.5 text-sm font-semibold hover:bg-cyan-50 hover:text-cyan-900">Gaceta Municipal</a>',
+            '<a href="'.route('gaceta.ediciones').'"',
+            '<a href="'.route('gaceta.actas').'"',
+        ], false);
     }
 
     public function test_presidencia_page_renders_directory_filter_and_president_information(): void

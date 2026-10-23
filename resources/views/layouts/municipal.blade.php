@@ -10,10 +10,23 @@
     <div class="bg-gobierno-navy px-4 py-2 text-xs text-white">
         <div class="mx-auto flex max-w-7xl items-center justify-between gap-3">
             <span>Portal Oficial del H. Ayuntamiento</span>
-            <div class="flex items-center gap-3" role="group" aria-label="Opciones de accesibilidad">
-                <button id="btn-decrease-font" type="button" class="hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-white" aria-label="Reducir tamaño del texto">A-</button>
-                <button id="btn-increase-font" type="button" class="hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-white" aria-label="Aumentar tamaño del texto">A+</button>
-                <button id="btn-contrast" type="button" class="hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-white" aria-pressed="false">Alto contraste</button>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-3" role="group" aria-label="Opciones de accesibilidad">
+                    <button id="btn-decrease-font" type="button" class="hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-white" aria-label="Reducir tamaño del texto">A-</button>
+                    <button id="btn-increase-font" type="button" class="hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-white" aria-label="Aumentar tamaño del texto">A+</button>
+                    <button id="btn-contrast" type="button" class="hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-white" aria-pressed="false">Alto contraste</button>
+                </div>
+                @auth
+                    @can('manage-news')
+                        <a href="{{ route('admin.noticias.index') }}" class="hover:underline">Administración</a>
+                        <form action="{{ route('logout') }}" method="POST">
+                            @csrf
+                            <button type="submit" class="hover:underline">Cerrar sesión</button>
+                        </form>
+                    @endcan
+                @else
+                    <a href="{{ route('login') }}" class="hover:underline">Acceso administrativo</a>
+                @endauth
             </div>
         </div>
     </div>
@@ -21,9 +34,7 @@
     <header class="border-b border-gray-200 bg-white px-4 py-4 sm:px-6">
         <div class="mx-auto flex max-w-7xl flex-col items-start justify-between gap-4 md:flex-row md:items-center">
             <a href="{{ url('/') }}" class="flex items-center gap-4">
-                <span class="flex h-16 w-16 shrink-0 items-center justify-center rounded bg-gray-200 text-xs font-semibold text-gray-600" aria-label="Gobierno de Cocula">
-                    Cocula
-                </span>
+                <img src="{{ asset('img/cropped-logo2025.webp') }}" alt="Escudo del Gobierno de Cocula" class="h-16 w-16 shrink-0 object-contain">
                 <span>
                     <span class="block text-xs font-medium uppercase tracking-wider text-gray-500">Bienvenidos a la página oficial de</span>
                     <span class="block text-2xl font-extrabold leading-tight text-amber-700 md:text-3xl">Gobierno de Cocula, Jalisco</span>
@@ -52,8 +63,8 @@
     </header>
 
     <nav aria-label="Navegación principal" class="relative z-50 bg-gobierno-navy text-white shadow-md">
-        <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between px-2">
-            <ul class="flex flex-wrap items-center gap-1 py-1 text-xs font-bold uppercase tracking-wider">
+        <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-center px-2">
+            <ul class="flex flex-wrap items-center justify-center gap-1 py-1 text-xs font-bold uppercase tracking-wider">
                 <li>
                     <a href="{{ url('/') }}" @class([
                         'block px-3 py-3 transition hover:bg-gobierno-hover',
@@ -75,19 +86,42 @@
                         <a href="{{ route('regidores') }}" class="block px-4 py-2.5 text-sm font-semibold hover:bg-cyan-50 hover:text-cyan-900">Regidores y Cabildo</a>
                         <a href="{{ route('presidencia') }}" class="block px-4 py-2.5 text-sm font-semibold hover:bg-cyan-50 hover:text-cyan-900">Organigrama</a>
                         <a href="{{ route('presidencia') }}" class="block px-4 py-2.5 text-sm font-semibold hover:bg-cyan-50 hover:text-cyan-900">Sesiones de Ayuntamiento</a>
-                        <a href="{{ route('gaceta') }}" class="block px-4 py-2.5 text-sm font-semibold hover:bg-cyan-50 hover:text-cyan-900">Gaceta Municipal y Edictos</a>
                         <a href="{{ route('transparencia') }}" class="block px-4 py-2.5 text-sm font-semibold hover:bg-cyan-50 hover:text-cyan-900">SEVAC</a>
                     </div>
                 </li>
-                <li><a href="{{ route('atencion-ciudadana') }}" class="block px-3 py-3 transition hover:bg-gobierno-hover">Atención Ciudadana</a></li>
+                <li class="relative" data-dropdown>
+                    <div class="flex items-center">
+                        <a href="{{ route('gaceta') }}" @class([
+                            'block px-3 py-3 transition hover:bg-gobierno-hover',
+                            'bg-gobierno-dark' => request()->routeIs('gaceta', 'gaceta.*'),
+                        ])>Gaceta</a>
+                        <button id="dropdown-gaceta-btn" type="button" aria-label="Abrir opciones de Gaceta" aria-expanded="false" aria-controls="dropdown-gaceta-menu" class="px-2 py-3 transition hover:bg-gobierno-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-white" data-dropdown-toggle>
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 9-7 7-7-7"></path></svg>
+                        </button>
+                    </div>
+                    <div id="dropdown-gaceta-menu" class="dropdown-menu absolute left-0 top-full w-64 border border-gray-200 bg-white py-2 text-gray-800 shadow-xl" data-dropdown-menu>
+                        <a href="{{ route('gaceta') }}" class="block px-4 py-2.5 text-sm font-semibold hover:bg-cyan-50 hover:text-cyan-900">Gaceta Municipal</a>
+                        <a href="{{ route('gaceta.ediciones') }}" class="block px-4 py-2.5 text-sm font-semibold hover:bg-cyan-50 hover:text-cyan-900">Ediciones Anteriores</a>
+                        <a href="{{ route('gaceta.actas') }}" class="block px-4 py-2.5 text-sm font-semibold hover:bg-cyan-50 hover:text-cyan-900">Actas de Cabildo</a>
+                        <a href="{{ route('atencion-ciudadana') }}" class="block px-4 py-2.5 text-sm font-semibold hover:bg-cyan-50 hover:text-cyan-900">Atención Ciudadana</a>
+                    </div>
+                </li>
                 <li>
                     <a href="{{ route('tramites') }}" @class([
                         'flex flex-col px-3 py-2 text-center leading-tight transition hover:bg-gobierno-hover',
                         'bg-gobierno-dark' => request()->routeIs('tramites'),
                     ])><span>PAGO</span><span>DE SERV</span></a>
                 </li>
-                <li><a href="#" class="block px-3 py-3 transition hover:bg-gobierno-hover">Reglamentos</a></li>
-                <li><a href="#" class="block px-3 py-3 transition hover:bg-gobierno-hover">Conv</a></li>
+                <li><a href="{{ route('reglamentos.index') }}" @class([
+                    'block px-3 py-3 transition hover:bg-gobierno-hover',
+                    'bg-gobierno-dark' => request()->routeIs('reglamentos.*'),
+                ])>Reglamentos</a></li>
+                <li>
+                    <a href="{{ route('convocatorias') }}" @class([
+                        'block px-3 py-3 transition hover:bg-gobierno-hover',
+                        'bg-gobierno-dark' => request()->routeIs('convocatorias'),
+                    ])>CONV</a>
+                </li>
                 <li><a href="#" class="block px-3 py-3 transition hover:bg-gobierno-hover">DIF</a></li>
                 <li>
                     <a href="{{ route('transparencia') }}" @class([
@@ -125,7 +159,7 @@
                     <li><a href="{{ route('contacto') }}" class="hover:underline">Contacto (demostración)</a></li>
                     <li><span>Protección de Datos</span></li>
                     <li><span>Bolsa de Trabajo</span></li>
-                    <li><span>Normatividad Municipal</span></li>
+                    <li><a href="{{ route('reglamentos.index') }}" class="hover:underline">Normatividad Municipal</a></li>
                 </ul>
             </section>
 
