@@ -1,4 +1,5 @@
 import './autenticaciones.js';
+import './ubicacion.js';
 
 document.querySelectorAll('[data-dropdown]').forEach((dropdown) => {
     const toggle = dropdown.querySelector('[data-dropdown-toggle]');

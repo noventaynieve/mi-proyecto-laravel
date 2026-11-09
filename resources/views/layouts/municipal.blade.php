@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title') | Gobierno de Cocula, Jalisco</title>
+    <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
+    <link rel="apple-touch-icon" href="{{ asset('img/logo-cocula.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans antialiased">
@@ -17,13 +19,13 @@
                     <button id="btn-contrast" type="button" class="hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-white" aria-pressed="false">Alto contraste</button>
                 </div>
                 @auth
-                    @can('manage-news')
-                        <a href="{{ route('admin.noticias.index') }}" class="hover:underline">Administración</a>
-                        <form action="{{ route('logout') }}" method="POST">
-                            @csrf
-                            <button type="submit" class="hover:underline">Cerrar sesión</button>
-                        </form>
+                    @can('access-admin')
+                        <a href="{{ route('admin.dashboard') }}" class="hover:underline">Panel administrativo</a>
                     @endcan
+                    <form action="{{ route('logout') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="hover:underline">Cerrar sesión</button>
+                    </form>
                 @else
                     <a href="{{ route('login') }}" class="hover:underline">Acceso administrativo</a>
                 @endauth
@@ -33,26 +35,20 @@
 
     <header class="border-b border-gray-200 bg-white px-4 py-4 sm:px-6">
         <div class="mx-auto flex max-w-7xl flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-            <a href="{{ url('/') }}" class="flex items-center gap-4">
-                <img src="{{ asset('img/cropped-logo2025.webp') }}" alt="Escudo del Gobierno de Cocula" class="h-16 w-16 shrink-0 object-contain">
+            <x-municipal-brand :href="url('/')">
                 <span>
                     <span class="block text-xs font-medium uppercase tracking-wider text-gray-500">Bienvenidos a la página oficial de</span>
                     <span class="block text-2xl font-extrabold leading-tight text-amber-700 md:text-3xl">Gobierno de Cocula, Jalisco</span>
                     <span class="block text-xs font-medium text-gray-500">2024 - 2027</span>
                 </span>
-            </a>
+            </x-municipal-brand>
 
             <div class="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
                 <form action="{{ route('buscar') }}" method="GET" role="search" class="flex w-full md:w-80">
                     <label for="site-search" class="sr-only">Buscar secciones del portal</label>
-                    <input id="site-search" type="search" name="q" maxlength="100" required placeholder="Buscar trámites o información" class="min-w-0 flex-1 rounded-l-lg border border-gray-300 px-3 py-2 text-sm focus:z-10 focus:border-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-700">
+                    <input id="site-search" type="search" name="q" value="{{ request('q') }}" maxlength="100" required placeholder="Buscar trámites o información" class="min-w-0 flex-1 rounded-l-lg border border-gray-300 px-3 py-2 text-sm focus:z-10 focus:border-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-700">
                     <button type="submit" class="rounded-r-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700">Buscar</button>
                 </form>
-                <div class="flex items-center gap-3 text-sm text-gray-600">
-                    <span class="hidden sm:inline">Síguenos:</span>
-                    <a href="#" aria-label="Facebook" class="flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 font-bold text-white hover:opacity-90">f</a>
-                    <a href="#" aria-label="YouTube" class="flex h-7 items-center justify-center rounded bg-red-600 px-2 font-bold text-white hover:opacity-90">YouTube</a>
-                </div>
             </div>
         </div>
 
@@ -122,16 +118,28 @@
                         'bg-gobierno-dark' => request()->routeIs('convocatorias'),
                     ])>CONV</a>
                 </li>
-                <li><a href="#" class="block px-3 py-3 transition hover:bg-gobierno-hover">DIF</a></li>
+                <li><a href="{{ route('dif') }}" @class([
+                    'block px-3 py-3 transition hover:bg-gobierno-hover',
+                    'bg-gobierno-dark' => request()->routeIs('dif'),
+                ])>DIF</a></li>
                 <li>
                     <a href="{{ route('transparencia') }}" @class([
                         'block px-3 py-3 transition hover:bg-gobierno-hover',
                         'bg-gobierno-dark' => request()->routeIs('transparencia'),
                     ])>Transp</a>
                 </li>
-                <li><a href="#" class="block px-3 py-3 transition hover:bg-gobierno-hover">Info</a></li>
-                <li><a href="#" class="block px-3 py-3 transition hover:bg-gobierno-hover">Acces</a></li>
-                <li><a href="#" class="block px-3 py-3 transition hover:bg-gobierno-hover">Otros</a></li>
+                <li><a href="{{ route('info') }}" @class([
+                    'block px-3 py-3 transition hover:bg-gobierno-hover',
+                    'bg-gobierno-dark' => request()->routeIs('info'),
+                ])>Info</a></li>
+                <li><a href="{{ route('accesibilidad') }}" @class([
+                    'block px-3 py-3 transition hover:bg-gobierno-hover',
+                    'bg-gobierno-dark' => request()->routeIs('accesibilidad'),
+                ])>Acces</a></li>
+                <li><a href="{{ route('ubicacion') }}" @class([
+                    'block px-3 py-3 transition hover:bg-gobierno-hover',
+                    'bg-gobierno-dark' => request()->routeIs('ubicacion'),
+                ])>Ubicación</a></li>
             </ul>
         </div>
     </nav>
@@ -160,6 +168,8 @@
                     <li><span>Protección de Datos</span></li>
                     <li><span>Bolsa de Trabajo</span></li>
                     <li><a href="{{ route('reglamentos.index') }}" class="hover:underline">Normatividad Municipal</a></li>
+                    <li><a href="{{ route('accesibilidad') }}" class="hover:underline">Accesibilidad</a></li>
+                    <li><a href="{{ route('ubicacion') }}" class="hover:underline">Ubicación</a></li>
                 </ul>
             </section>
 

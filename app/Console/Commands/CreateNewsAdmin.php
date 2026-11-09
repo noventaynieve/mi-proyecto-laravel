@@ -48,11 +48,10 @@ class CreateNewsAdmin extends Command
             'name' => $name,
             'email' => $email,
             'password' => $password,
+            'role' => User::ROLE_SUPER_ADMIN,
         ]);
-        $user->role = 'admin';
-        $user->save();
 
-        $this->components->info('La cuenta administradora se creó correctamente.');
+        $this->components->info('La cuenta de superadministración se creó correctamente.');
 
         return self::SUCCESS;
     }

@@ -7,7 +7,7 @@
         <section class="space-y-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
             <header class="space-y-2">
                 <h1 class="text-2xl font-bold text-slate-900">Acceso administrativo</h1>
-                <p class="text-sm text-slate-600">Inicia sesión con una cuenta administradora para gestionar noticias y categorías.</p>
+                <p class="text-sm text-slate-600">Inicia sesión con una cuenta autorizada para acceder a las herramientas del portal.</p>
             </header>
 
             @if ($errors->any())

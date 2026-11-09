@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Noticia;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -29,7 +30,10 @@ class MunicipalSectionsTest extends TestCase
             route('reglamentos.index'),
             route('convocatorias'),
             route('gaceta'),
+            route('accesibilidad'),
+            route('ubicacion'),
             route('transparencia'),
+            route('dif'),
             route('tramites'),
             route('atencion-ciudadana'),
         ] as $url) {
@@ -42,6 +46,20 @@ class MunicipalSectionsTest extends TestCase
         }
     }
 
+    public function test_public_and_admin_layouts_render_the_shared_cocula_brand(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $publicResponse = $this->get(route('home'));
+        $adminResponse = $this->actingAs($admin)->get(route('admin.dashboard'));
+
+        foreach ([$publicResponse, $adminResponse] as $response) {
+            $response->assertOk();
+            $response->assertSee('src="'.asset('img/cropped-logo2025.webp').'"', false);
+            $response->assertSee('alt="Escudo del Gobierno de Cocula"', false);
+        }
+    }
+
     public function test_homepage_links_to_highlighted_municipal_sections(): void
     {
         $response = $this->get(route('home'));
@@ -50,6 +68,112 @@ class MunicipalSectionsTest extends TestCase
         $response->assertSee('href="'.route('atencion-ciudadana').'"', false);
         $response->assertSee('href="'.route('gaceta').'"', false);
         $response->assertSee('href="'.route('regidores').'"', false);
+    }
+
+    public function test_info_page_is_reachable_from_navigation_and_shows_magic_town_committee_information(): void
+    {
+        $homepage = $this->get(route('home'));
+        $response = $this->get(route('info'));
+
+        $homepage->assertOk();
+        $homepage->assertSee('href="'.route('info').'"', false);
+        $response->assertOk();
+        $response->assertSee('Comité de Pueblo Mágico');
+        $response->assertSee('viernes 28 de febrero de 2025');
+        $response->assertSee('Hasta cuatro Vocalías Ciudadanas');
+        $response->assertSeeInOrder([
+            'LUIS ARMANDO ALDANA GONZALEZ',
+            'JUAN MANUEL SEVILLA GONZALEZ',
+            'MARIA CRISTINA RAMIREZ BARRAZA',
+            'AURORA YURIDIA VALADEZ PLAZOLA',
+            'DOLORES CATALINA IBARRA CORTEZ',
+            'MARIA LUISA GABRIELA RAMIREZ OLIVA',
+            'VICTOR HUGO MONTES BARBOZA',
+            'LANCELOT NANDINO GUTIERREZ',
+            'LUIS ALBERTO RAMIREZ BARRAZA',
+            'JOSE RAFAEL RUBIO IBARRA',
+            'CARLOS ALBERTO ACOSTA GALLEGOS',
+            'DIEGO MIGUEL GARCIA HERNANDEZ',
+            'MIGUEL RAFAEL FLETES PALACIOS',
+        ]);
+    }
+
+    public function test_dif_page_is_reachable_from_navigation_and_shows_the_presidents_message(): void
+    {
+        $homepage = $this->get(route('home'));
+        $response = $this->get(route('dif'));
+
+        $homepage->assertOk();
+        $homepage->assertSee('href="'.route('dif').'"', false);
+        $response->assertOk();
+        $response->assertSee('Belia Alicia Flores Ramos');
+        $response->assertSee('Presidenta del DIF Municipal de Cocula');
+        $response->assertSee('fortalecimiento de nuestros programas sociales');
+        $response->assertSee('Luis Armando Aldana González');
+        $response->assertSee('Fotografía pendiente de publicación.');
+        $response->assertDontSee('ruta/a/la/foto_directora.jpg');
+    }
+
+    public function test_accessibility_page_renders_from_navigation_with_programs_and_recent_notes(): void
+    {
+        $homepage = $this->get(route('home'));
+        $response = $this->get(route('accesibilidad'));
+        $search = $this->get(route('buscar', ['q' => 'Accesibilidad']));
+
+        $homepage->assertOk();
+        $homepage->assertSee('href="'.route('accesibilidad').'"', false);
+
+        $response->assertOk();
+        $response->assertSee('Programa de accesibilidad');
+        $response->assertSee('Gestiones ante el CRIT de Occidente');
+        $response->assertSee('Oro para Cocula en los CONADE');
+        $response->assertSee('Cocula reconoce participación en los CONADE 2021');
+        $response->assertSee('Enlace pendiente de publicación');
+        $response->assertSeeInOrder([
+            'Reconocen a tres coculenses con los Distintivos al Compromiso Comunitario',
+            'Gobierno de Cocula anuncia nuevo programa de rehabilitación de calles con recursos municipales',
+            'Cocula impulsa la prevención del cáncer de mama y cervicouterino con jornada de concientización',
+            'Mariachi Sol de Mi Tierra obtiene el tercer lugar en concurso infantil y juvenil en Puerto Vallarta',
+        ]);
+
+        $search->assertOk();
+        $search->assertSee('href="'.route('accesibilidad').'"', false);
+    }
+
+    public function test_location_page_renders_google_maps_embed_and_is_linked_from_the_portal(): void
+    {
+        config()->set('services.google_maps.key', null);
+
+        $homepage = $this->get(route('home'));
+        $response = $this->get(route('ubicacion'));
+
+        $homepage->assertOk();
+        $homepage->assertSee('href="'.route('ubicacion').'"', false);
+
+        $response->assertOk();
+        $response->assertSee('Explorador de Ubicaciones');
+        $response->assertSee('Centro de Cocula, Jalisco');
+        $response->assertSee('20.3667%2C-103.8167', false);
+        $response->assertSee('title="Mapa de referencia del centro de Cocula, Jalisco"', false);
+        $response->assertSee('loading="lazy"', false);
+        $response->assertSee('href="https://www.google.com/maps/dir/?api=1&amp;destination=20.3667%2C-103.8167"', false);
+        $response->assertSee('GOOGLE_MAPS_API_KEY', false);
+        $response->assertDontSee('data-google-map', false);
+        $response->assertDontSee('data-map-locate', false);
+    }
+
+    public function test_location_page_enables_interactive_google_maps_when_an_api_key_is_configured(): void
+    {
+        config()->set('services.google_maps.key', 'test-browser-key');
+
+        $response = $this->get(route('ubicacion'));
+
+        $response->assertOk();
+        $response->assertSee('data-google-maps-api-key="test-browser-key"', false);
+        $response->assertSee('data-place-autocomplete', false);
+        $response->assertSee('data-map-locate', false);
+        $response->assertSee('data-map-traffic', false);
+        $response->assertDontSee('Configura GOOGLE_MAPS_API_KEY');
     }
 
     public function test_homepage_renders_recent_news_and_links_to_its_detail(): void
@@ -346,6 +470,49 @@ class MunicipalSectionsTest extends TestCase
         $response->assertOk();
         $response->assertSee('Gaceta Municipal');
         $response->assertSee('href="'.route('gaceta').'"', false);
+    }
+
+    public function test_search_returns_magic_town_committee_page(): void
+    {
+        $response = $this->get(route('buscar', ['q' => 'Pueblo Mágico']));
+
+        $response->assertOk();
+        $response->assertSee('Comité de Pueblo Mágico');
+        $response->assertSee('href="'.route('info').'"', false);
+    }
+
+    public function test_search_returns_dif_municipal_page(): void
+    {
+        $response = $this->get(route('buscar', ['q' => 'DIF']));
+
+        $response->assertOk();
+        $response->assertSee('DIF Municipal');
+        $response->assertSee('href="'.route('dif').'"', false);
+    }
+
+    public function test_search_returns_direct_links_for_predial_and_license_requests(): void
+    {
+        $predialResponse = $this->get(route('buscar', ['q' => 'predial']));
+        $licenseResponse = $this->get(route('buscar', ['q' => 'licencia']));
+
+        $predialResponse->assertOk();
+        $predialResponse->assertSee('Consulta de Predial (demostración)');
+        $predialResponse->assertSee('href="'.route('tramites.predial').'"', false);
+
+        $licenseResponse->assertOk();
+        $licenseResponse->assertSee('Solicitud de Licencia Comercial (demostración)');
+        $licenseResponse->assertSee('href="'.route('solicitud-licencia').'"', false);
+    }
+
+    public function test_header_keeps_search_query_and_does_not_show_social_media_links(): void
+    {
+        $response = $this->get(route('buscar', ['q' => 'predial']));
+
+        $response->assertOk();
+        $response->assertSee('name="q" value="predial"', false);
+        $response->assertDontSee('Síguenos:');
+        $response->assertDontSee('aria-label="Facebook"', false);
+        $response->assertDontSee('aria-label="YouTube"', false);
     }
 
     public function test_search_rejects_queries_longer_than_one_hundred_characters(): void

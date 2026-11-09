@@ -103,6 +103,100 @@ class NewsModuleTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_editor_general_can_manage_news_and_categories(): void
+    {
+        $editor = User::factory()->create([
+            'role' => User::ROLE_EDITOR_GENERAL,
+        ]);
+
+        $this->actingAs($editor)
+            ->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertSee('Bienvenido al Control General');
+
+        $this->get(route('admin.noticias.index'))->assertOk();
+        $this->get(route('admin.categorias.index'))->assertOk();
+    }
+
+    public function test_every_configured_panel_role_can_open_the_dashboard(): void
+    {
+        foreach (User::PANEL_ROLES as $role) {
+            $user = User::factory()->create([
+                'role' => $role,
+            ]);
+
+            $this->actingAs($user)
+                ->get(route('admin.dashboard'))
+                ->assertOk();
+        }
+    }
+
+    public function test_transparency_role_can_open_dashboard_but_cannot_manage_news(): void
+    {
+        $user = User::factory()->create([
+            'role' => User::ROLE_TRANSPARENCIA,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('admin.dashboard'))
+            ->assertOk();
+
+        $this->get(route('admin.noticias.index'))->assertForbidden();
+        $this->get(route('admin.categorias.index'))->assertForbidden();
+    }
+
+    public function test_inactive_admin_is_logged_out_when_opening_admin_panel(): void
+    {
+        $admin = User::factory()->admin()->create([
+            'activo' => false,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.dashboard'))
+            ->assertRedirectToRoute('login')
+            ->assertSessionHasErrors('email');
+
+        $this->assertGuest();
+    }
+
+    public function test_dashboard_shows_real_news_and_active_panel_user_counts(): void
+    {
+        $admin = User::factory()->admin()->create();
+        User::factory()->create([
+            'role' => User::ROLE_EDITOR_GENERAL,
+        ]);
+        User::factory()->admin()->create([
+            'activo' => false,
+        ]);
+
+        Noticia::factory()->create([
+            'titulo' => 'Noticia publicada en dashboard',
+        ]);
+        Noticia::factory()->unpublished()->create([
+            'titulo' => 'Borrador no publicado',
+        ]);
+        Noticia::factory()->create([
+            'titulo' => 'Noticia futura programada',
+            'fecha_publicacion' => today()->addDay(),
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertSee('Noticias publicadas')
+            ->assertSee('Usuarios con acceso activo')
+            ->assertSee('Usuarios registrados con permisos de acceso')
+            ->assertSee($admin->name)
+            ->assertSee('Noticia publicada en dashboard')
+            ->assertSee('Borrador no publicado')
+            ->assertSee('Noticia futura programada')
+            ->assertDontSee('Solicitudes DIF Pendientes')
+            ->assertViewHas('stats', [
+                'total_noticias' => 1,
+                'total_usuarios' => 2,
+            ]);
+    }
+
     public function test_admin_can_render_news_creation_form(): void
     {
         $this->actingAs(User::factory()->admin()->create());
@@ -128,7 +222,7 @@ class NewsModuleTest extends TestCase
         $this->post(route('login.store'), [
             'email' => $admin->email,
             'password' => 'password',
-        ])->assertRedirectToRoute('admin.noticias.index');
+        ])->assertRedirectToRoute('admin.dashboard');
 
         $this->assertAuthenticatedAs($admin);
 
@@ -144,6 +238,22 @@ class NewsModuleTest extends TestCase
 
         $this->post(route('login.store'), [
             'email' => $user->email,
+            'password' => 'password',
+        ])
+            ->assertRedirect()
+            ->assertSessionHasErrors('email');
+
+        $this->assertGuest();
+    }
+
+    public function test_inactive_admin_credentials_cannot_start_an_admin_session(): void
+    {
+        $admin = User::factory()->admin()->create([
+            'activo' => false,
+        ]);
+
+        $this->post(route('login.store'), [
+            'email' => $admin->email,
             'password' => 'password',
         ])
             ->assertRedirect()
@@ -274,6 +384,46 @@ class NewsModuleTest extends TestCase
         $this->assertDatabaseMissing('noticias', ['id' => $noticia->id]);
     }
 
+    public function test_admin_account_can_be_created_via_factory_and_user_role_is_mass_assignable(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $this->assertTrue($admin->isAdmin());
+        $this->assertSame(User::ROLE_SUPER_ADMIN, $admin->role);
+
+        $created = User::create([
+            'name' => 'Administrador de prueba',
+            'email' => 'admin-prueba@cocula.gob.mx',
+            'password' => 'password',
+            'role' => User::ROLE_SUPER_ADMIN,
+        ]);
+
+        $this->assertTrue($created->isAdmin());
+    }
+
+    public function test_document_role_aliases_are_supported_for_admin_checks(): void
+    {
+        $admin = User::factory()->create([
+            'role' => User::ROLE_ADMIN,
+        ]);
+        $editor = User::factory()->create([
+            'role' => User::ROLE_EDITOR,
+        ]);
+        $citizen = User::factory()->create([
+            'role' => User::ROLE_CITIZEN,
+        ]);
+
+        $this->assertTrue($admin->isAdmin());
+        $this->assertTrue($admin->canAccessAdmin());
+        $this->assertTrue($admin->hasRole(User::ROLE_ADMIN));
+
+        $this->assertTrue($editor->canAccessAdmin());
+        $this->assertTrue($editor->hasRole(User::ROLE_EDITOR));
+
+        $this->assertFalse($citizen->canAccessAdmin());
+        $this->assertFalse($citizen->hasRole(User::ROLE_ADMIN));
+    }
+
     public function test_news_admin_command_creates_a_hashed_admin_account(): void
     {
         $this->artisan('news:create-admin')
@@ -286,6 +436,7 @@ class NewsModuleTest extends TestCase
         $admin = User::query()->where('email', 'admin@cocula.gob.mx')->firstOrFail();
 
         $this->assertTrue($admin->isAdmin());
+        $this->assertSame(User::ROLE_SUPER_ADMIN, $admin->role);
         $this->assertTrue(Hash::check('UnaClaveSegura123', $admin->password));
     }
 

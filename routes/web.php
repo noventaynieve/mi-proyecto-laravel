@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\Admin\CategoriaController as AdminCategoriaController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\NoticiaController as AdminNoticiaController;
+use App\Http\Controllers\Admin\RegistroFormulariosAdminController;
 use App\Http\Controllers\Auth\SessionController;
 use App\Http\Controllers\NoticiaController;
 use Illuminate\Http\Request;
@@ -25,13 +27,23 @@ Route::post('/salir', [SessionController::class, 'destroy'])
 
 Route::prefix('admin')
     ->name('admin.')
-    ->middleware(['auth', 'can:manage-news'])
+    ->middleware(['auth', 'role:super_admin,editor_general,transparencia,admin_dif,catastro'])
     ->group(function (): void {
-        Route::resource('noticias', AdminNoticiaController::class)->except('show');
-        Route::resource('categorias', AdminCategoriaController::class)->except('show');
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/registros-formularios', [RegistroFormulariosAdminController::class, 'index'])
+            ->name('formularios.index');
+        Route::patch('/registros-formularios/{solicitudFormulario}', [RegistroFormulariosAdminController::class, 'updateEstatus'])
+            ->name('formularios.updateEstatus');
+
+        Route::middleware('role:editor_general')->group(function (): void {
+            Route::resource('noticias', AdminNoticiaController::class)->except('show');
+            Route::resource('categorias', AdminCategoriaController::class)->except('show');
+        });
     });
 
 Route::view('/presidencia', 'presidencia')->name('presidencia');
+Route::view('/accesibilidad', 'accesibilidad')->name('accesibilidad');
+Route::view('/ubicacion', 'ubicacion')->name('ubicacion');
 Route::get('/convocatorias', function () {
     $publication = [
         'path' => 'pdf/convocatoria-la-casa-que-canta.pdf',
@@ -63,12 +75,14 @@ Route::get('/reglamentos', function () {
     ]);
 })->name('reglamentos.index');
 Route::view('/transparencia', 'transparencia')->name('transparencia');
+Route::view('/info', 'info')->name('info');
 Route::view('/tramites', 'tramites')->name('tramites');
 Route::get('/tramites-inicio', function () {
     return redirect()->route('tramites');
 })->name('tramites.index');
 Route::view('/regidores', 'regidores')->name('regidores');
 Route::view('/presidencia/regidores', 'regidores')->name('presidencia.regidores');
+Route::view('/dif', 'dif')->name('dif');
 
 Route::match(['get', 'post'], '/tramites/predial', function (Request $request) {
     if ($request->isMethod('post')) {
@@ -129,8 +143,16 @@ Route::get('/buscar', function (Request $request) {
         ['title' => 'Reglamentos Municipales', 'description' => 'Consulta la normatividad municipal vigente.', 'url' => route('reglamentos.index')],
         ['title' => 'Gaceta Municipal', 'description' => 'Acuerdos, reglamentos y publicaciones oficiales.', 'url' => route('gaceta')],
         ['title' => 'Transparencia y SEVAC', 'description' => 'Obligaciones comunes, información financiera y rendición de cuentas.', 'url' => route('transparencia')],
+        ['title' => 'Comité de Pueblo Mágico', 'description' => 'Conoce la integración y los integrantes del Comité de Pueblo Mágico de Cocula.', 'url' => route('info')],
+        ['title' => 'DIF Municipal', 'description' => 'Conoce a la presidenta del DIF Municipal de Cocula y su mensaje a la ciudadanía.', 'url' => route('dif')],
         ['title' => 'Trámites y Servicios', 'description' => 'Pago de predial, licencias municipales y agua potable.', 'url' => route('tramites')],
+        ['title' => 'Pago de Agua y Predial', 'description' => 'Consulta los requisitos e información para realizar pagos en línea.', 'url' => route('tramites')],
+        ['title' => 'Consulta de Predial (demostración)', 'description' => 'Prueba el formulario de consulta de predial; no realiza pagos reales.', 'url' => route('tramites.predial')],
+        ['title' => 'Solicitud de Licencia Comercial (demostración)', 'description' => 'Revisa los campos y requisitos del formulario de licencia comercial.', 'url' => route('solicitud-licencia')],
+        ['title' => 'Solicitud de Información Pública', 'description' => 'Consulta el formulario de demostración para solicitar información pública.', 'url' => route('solicitud-transparencia')],
         ['title' => 'Atención Ciudadana', 'description' => 'Información para reportes de servicios públicos.', 'url' => route('atencion-ciudadana')],
+        ['title' => 'Accesibilidad', 'description' => 'Programas y gestiones de accesibilidad del Gobierno de Cocula.', 'url' => route('accesibilidad')],
+        ['title' => 'Ubicación', 'description' => 'Mapa de referencia del centro de Cocula, Jalisco.', 'url' => route('ubicacion')],
     ];
 
     $results = $query === ''

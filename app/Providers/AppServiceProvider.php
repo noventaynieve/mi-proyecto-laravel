@@ -21,6 +21,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Gate::define('manage-news', fn (User $user): bool => $user->isAdmin());
+        Gate::define('access-admin', fn (User $user): bool => $user->canAccessAdmin());
+        Gate::define('manage-news', fn (User $user): bool => $user->canAccessAdmin()
+            && $user->hasRole(User::ROLE_EDITOR_GENERAL));
     }
 }

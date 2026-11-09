@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,8 +13,8 @@ class SessionController extends Controller
 {
     public function create(): View|RedirectResponse
     {
-        if (Auth::user()?->can('manage-news')) {
-            return redirect()->route('admin.noticias.index');
+        if (Auth::user()?->canAccessAdmin()) {
+            return redirect()->route('admin.dashboard');
         }
 
         return view('auth.login');
@@ -26,7 +27,19 @@ class SessionController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        if (! Auth::attempt([...$credentials, 'role' => 'admin'])) {
+        if (! Auth::attempt($credentials)) {
+            return back()
+                ->withErrors(['email' => 'Las credenciales no son válidas para el acceso administrativo.'])
+                ->withInput($request->only('email'));
+        }
+
+        $user = Auth::user();
+
+        if (! $user instanceof User || ! $user->canAccessAdmin()) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
             return back()
                 ->withErrors(['email' => 'Las credenciales no son válidas para el acceso administrativo.'])
                 ->withInput($request->only('email'));
@@ -34,7 +47,7 @@ class SessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('admin.noticias.index'));
+        return redirect()->route('admin.dashboard');
     }
 
     public function destroy(Request $request): RedirectResponse

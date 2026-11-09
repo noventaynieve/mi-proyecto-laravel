@@ -1,4 +1,4 @@
-@extends('layouts.municipal')
+@extends('layouts.admin')
 
 @section('title', 'Crear categoría')
 

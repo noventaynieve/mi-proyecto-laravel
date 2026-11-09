@@ -31,13 +31,14 @@ class UserFactory extends Factory
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
             'role' => 'user',
+            'activo' => true,
         ];
     }
 
     public function admin(): static
     {
         return $this->state(fn (array $attributes): array => [
-            'role' => 'admin',
+            'role' => User::ROLE_SUPER_ADMIN,
         ]);
     }
 
